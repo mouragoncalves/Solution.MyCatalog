@@ -1,9 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using MyCatalog.Api.Models;
 
 namespace MyCatalog.Api.Data
 {
-    public class ApiDbContext(DbContextOptions<ApiDbContext> options) : DbContext(options)
+    public class ApiDbContext(DbContextOptions<ApiDbContext> options) : IdentityDbContext(options)
     {
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
