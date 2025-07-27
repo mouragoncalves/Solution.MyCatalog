@@ -3,15 +3,18 @@ using Microsoft.EntityFrameworkCore;
 using MyCatalog.Api.Data;
 using MyCatalog.Api.Models;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MyCatalog.Api.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("[controller]")]
     public class ProdutosController(ApiDbContext context) : ControllerBase
     {
         private readonly ApiDbContext _context = context;
 
+        [AllowAnonymous]
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -29,6 +32,7 @@ namespace MyCatalog.Api.Controllers
             return Ok(request);
         }
 
+        [AllowAnonymous]
         [HttpGet("{id:int}", Name = "GetProduto???")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -119,6 +123,7 @@ namespace MyCatalog.Api.Controllers
             }
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
