@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using MyCatalog.Api.Data;
 using MyCatalog.Api.Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Authorization;
 
 namespace MyCatalog.Api.Controllers

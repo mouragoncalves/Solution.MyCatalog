@@ -1,97 +1,14 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
-using MyCatalog.Api.Data;
-using MyCatalog.Api.Models;
+using MyCatalog.Api.Configurations;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
-//.ConfigureApiBehaviorOptions(o => o.SuppressModelStateInvalidFilter = true); // Usado para fazer as validações de modelo manualmente
-
-builder.Services.AddCors(o =>
-{
-    o.AddPolicy("Development", builder => 
-    builder.AllowAnyOrigin()
-    .AllowAnyMethod()
-    .AllowAnyHeader());
-
-    o.AddPolicy("Production", builder => 
-    builder.WithOrigins("https://localhost:8080")
-    .WithMethods("POST")
-    .AllowAnyHeader());
-});
-
-builder.Services.AddEndpointsApiExplorer();
-//builder.Services.AddSwaggerGen();
-
-// Configuração do Swagger para documentação da API
-builder.Services.AddSwaggerGen(o =>
-{
-    o.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        Description = "Insira o token JWT desta maneira: Bearer {seu_token}",
-        Name = "Authorization",
-        In = ParameterLocation.Header,
-        Type = SecuritySchemeType.ApiKey,
-        Scheme = "Bearer",
-        BearerFormat = "JWT",
-    });
-
-    o.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            Array.Empty<string>()
-        }
-    });
-});
-
-builder.Services.AddDbContext<ApiDbContext>(options =>
-    options.UseMySQL(builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new Exception("")));
-
-builder.Services.AddIdentity<IdentityUser, IdentityRole>()
-    .AddRoles<IdentityRole>()
-    .AddEntityFrameworkStores<ApiDbContext>();
-//.AddDefaultTokenProviders();
-
-var jwtSettings = builder.Configuration.GetSection("JwtSettings");
-builder.Services.Configure<JwtSettings>(jwtSettings);
-
-var jwtOptions = jwtSettings.Get<JwtSettings>() ?? throw new Exception("JWT settings are not configured properly.");
-
-var key = System.Text.Encoding.ASCII.GetBytes(jwtOptions.Segredo);
-
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-    .AddJwtBearer(options =>
-    {
-        options.RequireHttpsMetadata = true;
-        options.SaveToken = true;
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(key),
-            ValidateIssuer = true,
-            ValidIssuer = jwtOptions.Emissor,
-            ValidateAudience = true,
-            ValidAudience = jwtOptions.ValidoEm,
-            ValidateLifetime = true,
-            ClockSkew = TimeSpan.Zero // Remove a tolerância de tempo padrão de 5 minutos
-        };
-    });
+builder.AddControllerConfiguration()
+    .AddCorsConfiguration()
+    .AddEndpointsConfiguration()
+    .AddSwaggerGenConfiguration()
+    .AddApiDbContextConfiguration()
+    .AddIdentityConfiguration()
+    .AddAuthenticationConfiguration();
 
 var app = builder.Build();
 
